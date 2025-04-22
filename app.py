@@ -1,25 +1,22 @@
 from flask import Flask, request, jsonify
-import os
-import json
-from datetime import datetime
 
 app = Flask(__name__)
-DATA_DIR = "data"
-os.makedirs(DATA_DIR, exist_ok=True)
 
 @app.route("/upload", methods=["POST"])
 def upload_emotion():
     data = request.get_json()
 
-    # 檔名格式：timestamp_studentname.json
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    name = data.get("student", "anonymous").replace(" ", "_")
-    filename = f"{timestamp}_{name}.json"
+    # 這裡可以選擇進一步分析統計或即時儀表板展示用（目前直接回傳）
+    student = data.get("student_id", "unknown")
+    emotions = data.get("emotions", {})
 
-    with open(os.path.join(DATA_DIR, filename), "w") as f:
-        json.dump(data, f)
+    print(f"Received from {student}: {emotions}")
 
-    return jsonify({"status": "success", "message": "Data saved."})
+    return jsonify({
+        "status": "success",
+        "message": f"Received emotion data from {student}.",
+        "emotions": emotions
+    })
 
 @app.route("/")
 def home():
