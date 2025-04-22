@@ -4,7 +4,16 @@ app = Flask(__name__)
 
 @app.route("/all", methods=["GET"])
 def get_all_emotions():
-    return jsonify({"data": uploaded_results})
+    all_results = []
+    for filename in os.listdir(DATA_DIR):
+        if filename.endswith(".json"):
+            with open(os.path.join(DATA_DIR, filename)) as f:
+                try:
+                    data = json.load(f)
+                    all_results.append(data)
+                except:
+                    continue
+    return jsonify(all_results)
 
     # 這裡可以選擇進一步分析統計或即時儀表板展示用（目前直接回傳）
     student = data.get("student_id", "unknown")
