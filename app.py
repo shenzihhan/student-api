@@ -1,6 +1,21 @@
+import os, json
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
+
+@app.route("/upload", methods=["POST"])
+def upload_emotion_data():
+    data = request.json
+    student_id = data.get("student", "unknown")
+    records = data.get("records", [])
+
+    filename = f"{DATA_DIR}/{student_id}_{int(time.time())}.json"
+    with open(filename, "w") as f:
+        json.dump(records, f)
+
+    return jsonify({"status": "success", "message": f"Data saved for {student_id}."})
 
 @app.route("/all", methods=["GET"])
 def get_all_emotions():
@@ -9,27 +24,12 @@ def get_all_emotions():
         if filename.endswith(".json"):
             with open(os.path.join(DATA_DIR, filename)) as f:
                 try:
-                    data = json.load(f)
-                    all_results.append(data)
+                    records = json.load(f)
+                    all_results.extend(records)
                 except:
                     continue
-    return jsonify(all_results)
-
-    # 這裡可以選擇進一步分析統計或即時儀表板展示用（目前直接回傳）
-    student = data.get("student_id", "unknown")
-    emotions = data.get("emotions", {})
-
-    print(f"Received from {student}: {emotions}")
-
-    return jsonify({
-        "status": "success",
-        "message": f"Received emotion data from {student}.",
-        "emotions": emotions
-    })
+    return jsonify({"data": all_results})
 
 @app.route("/")
 def home():
     return "Student Emotion API is running!"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
